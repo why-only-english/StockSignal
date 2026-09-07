@@ -35,6 +35,16 @@ Python 3.11 이상을 설치한 Windows에서 이 폴더의 `update.ps1`을 Powe
 - 종가 기준일 다음 거래일을 적용 거래일로 표시합니다. 시가/종가 체결 가격은 가정하거나 추적하지 않습니다.
 - `config.json`에 파라미터가 있고, 계산에 쓴 설정은 결과에 함께 보관합니다.
 
+## 참고 이미지
+
+### 1단계 · 지금은 어떤 시장인가
+
+사진 추가 예정
+
+### 2단계 · 무엇을 살 것인가
+
+사진 추가 예정
+
 ## 데이터·복구
 
 `stock_signal/app.py`가 2000년부터 Yahoo Finance NDX와 Cboe VIX의 일별 종가를 읽고 전체 순서를 다시 계산합니다.
@@ -49,7 +59,7 @@ Python 3.11 이상을 설치한 Windows에서 이 폴더의 `update.ps1`을 Powe
 
 ## GitHub 연결 및 자동 실행 설정
 
-프로젝트 루트는 `C:\Users\문종근\Desktop\문종근\stock\StockSignal`입니다. 원격 저장소는 https://github.com/why-only-english/StockSignal.git 입니다. 사람의 커밋 작성자와 푸시 인증은 why-only-english 계정을 사용합니다. Pages 활성화와 첫 자동 실행은 별도 설정 단계입니다.
+원격 저장소는 https://github.com/why-only-english/StockSignal.git 입니다. 사람의 커밋 작성자와 푸시 인증은 why-only-english 계정을 사용합니다. Pages 활성화와 첫 자동 실행은 별도 설정 단계입니다.
 
 1. 원격 저장소: `why-only-english/StockSignal`.
 2. 로컬 변경은 사용자 승인 후 why-only-english 인증을 확인하고 커밋·푸시합니다. 공개 저장소와 표준 Actions 실행 환경을 전제로 한 무료 구성입니다.
