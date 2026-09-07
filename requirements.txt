@@ -1,0 +1,5 @@
+yfinance==1.7.0
+exchange-calendars==4.13.2
+pandas==3.0.5
+numpy==2.4.6
+pytest==9.1.1

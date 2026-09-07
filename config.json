@@ -1,0 +1,13 @@
+{
+  "version": "tripod-1.0",
+  "symbol": "^NDX",
+  "history_start": "2000-01-01",
+  "ma_days": 250,
+  "vix_days": 10,
+  "high_days": 252,
+  "bull_multiplier": 1.01,
+  "bear_multiplier": 0.95,
+  "bull_vix_limit": 28,
+  "bear_vix_limit": 18,
+  "drawdown_limit": 0.09
+}

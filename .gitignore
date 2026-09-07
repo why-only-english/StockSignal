@@ -1,0 +1,19 @@
+# Publish only the app; unrelated existing files in this folder stay excluded.
+/*
+!/.gitignore
+!/README.md
+!/requirements.txt
+!/config.json
+!/stock_signal/
+!/web/
+!/tests/
+!/.github/
+!/data/
+!/update.ps1
+!/stock-architecture.html
+!/strategy-reference-notes.md
+/data/*
+!/data/state.json
+__pycache__/
+*.pyc
+.pytest_cache/

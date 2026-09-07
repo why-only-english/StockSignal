@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Signal · 시스템 아키텍처</title>
+<style>
+:root{--bg:#f3f5f7;--ink:#182832;--muted:#586974;--line:#d8e1e6;--blue:#215de0;--green:#087664;--orange:#a75d09}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","Malgun Gothic",sans-serif;line-height:1.6}main{max-width:1240px;margin:auto;padding:54px 36px 40px}header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:28px}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--blue);font-weight:700}h1{font-size:36px;letter-spacing:-1.6px;line-height:1.25;margin:12px 0}header p{color:var(--muted);margin:0;max-width:900px}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.tag{background:white;border:1px solid var(--line);border-radius:30px;padding:5px 12px;font-size:12px}.section-title{display:flex;gap:12px;align-items:center;margin:28px 0 15px;font-size:18px}.section-title span{font-size:12px;color:var(--muted);font-weight:400}h2,h3,p{margin-top:0}h3{font-size:17px;margin-bottom:10px}.flow{display:grid;grid-template-columns:1fr 42px 1.65fr 42px 1fr;align-items:center}.box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:23px;min-width:0}.box p{font-size:13px;color:var(--muted);margin-bottom:12px}.label{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:1px;margin-bottom:10px}.source{padding:13px 0;border-top:1px solid var(--line)}.source b{display:block;font-size:14px}.source small{display:block;color:var(--muted);font-size:12px}.arrow{text-align:center;font-size:27px;color:#8195a1}.cloud{border:1px solid #a9bfe5;background:#edf3fe;border-radius:19px;padding:19px}.cloud-title{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;font-size:14px;margin-bottom:15px}.cloud-title small{font-size:11px;font-weight:400;color:var(--blue)}.step{background:white;padding:14px 16px;border-radius:10px;border:1px solid #d6e0ef;font-size:13px}.step strong{display:block}.step small{font-size:12px;color:var(--muted)}.down{text-align:center;color:#718ba9;height:25px}.storage{background:#e5f3ef;border:1px solid #b6d8cf;border-radius:10px;padding:14px;margin-top:14px;font-size:12px;color:var(--green)}.storage b{display:block}.screen{background:#182832;color:white;padding:18px;border-radius:12px;margin:14px 0}.screen small{font-size:11px;color:#b9cbd6}.screen strong{display:block;font-size:18px;margin:5px 0 12px}.screen hr{border:0;border-top:1px solid #43535d;margin:14px 0}.screen p{color:#d6e3eb;margin:0;font-size:12px}.rail{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.rail .box{padding:18px 21px}.rail h3{font-size:14px;margin-bottom:6px}.rail p{margin:0}.error{border-left:4px solid #c88837}.return{border-left:4px solid var(--green)}.rules{display:grid;grid-template-columns:1fr 1.4fr;gap:18px}.rule-row{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;display:flex;justify-content:space-between;gap:15px}.rule-row:last-child{border:0}.rule-row b{white-space:nowrap}.green{color:var(--green)}.red{color:#ad3c36}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}tr:last-child td{border-bottom:0}.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.notes h3{font-size:14px}.notes p{margin-bottom:0;font-size:12px}.num{color:var(--orange);font-weight:700;font-size:12px;margin-bottom:6px}.footer{margin-top:25px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--muted)}a{color:var(--blue)}.scope{font-size:12px;color:var(--muted);margin:16px 0 0}code{font-family:Consolas,monospace;font-size:12px}details{margin-top:22px;font-size:12px;color:var(--muted)}summary{cursor:pointer;font-weight:600}details ul{padding-left:20px}
+@media(max-width:900px){main{padding:30px 20px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);height:40px}.rules,.notes,.rail{grid-template-columns:1fr}h1{font-size:29px}.section-title{flex-wrap:wrap}.box{padding:20px}}@media print{body{background:white}main{padding:15px;max-width:none}.box,.cloud{break-inside:avoid}details{display:none}header{margin-bottom:15px}h1{font-size:28px}.section-title{margin-top:18px}}
+</style>
+</head>
+<body><main>
+<header>
+<div class="eyebrow">STOCK SIGNAL / ARCHITECTURE 01</div>
+<h1>하루 한 번 계산하고,<br>두 가지 답만 확인한다.</h1>
+<p>미국장 종가 → 시장 상태 판정 → 목표 비중 산출 → 웹 대시보드. 개인 PC가 꺼져 있어도 클라우드에서 실행되는 첫 버전 설계.</p>
+<div class="tags"><span class="tag">자료 반영 v0.2 · 2026.09.07</span><span class="tag">데이터 API 키 발급 없음</span><span class="tag">공개 저장소 기준 무료 구성</span><span class="tag">하루 1회 정기 실행</span><span class="tag">이 문서는 실제 운영 화면이 아님</span></div>
+</header>
+<h2 class="section-title">시스템 구성도 <span>아이콘은 각 서비스의 역할을 나타냄 · 실선: 운영 흐름 / 점선: 개발·설정</span></h2>
+<figure style="margin:0;background:white;border:1px solid #d8e1e6;border-radius:18px;padding:16px;overflow-x:auto">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" role="img" aria-labelledby="arch-title arch-desc" style="display:block;width:100%;min-width:800px;height:auto;font-family:'Segoe UI','Malgun Gothic',sans-serif">
+<title id="arch-title">Stock Signal 시스템 구성도</title>
+<desc id="arch-desc">GitHub의 예약 스케줄러가 Actions 안의 Python을 매일 실행한다. Yahoo Finance와 Cboe 데이터를 받아 계산하고, GitHub 저장소에서 이전 상태를 읽어 결과를 저장한 뒤 GitHub Pages에 배포한다. 사용자는 브라우저로 Pages를 조회한다. 로컬 작업 폴더와 Codex는 개발과 초기 설정에만 사용한다.</desc>
+<defs>
+<marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0 8 4 0 8Z" fill="#386ac3"/></marker>
+<marker id="arr-gray" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0 8 4 0 8Z" fill="#83929e"/></marker>
+<g id="icon-clock" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="20" cy="20" r="16"/><path d="M20 10V21L28 25"/></g>
+<g id="icon-code" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="42" height="34" rx="5"/><path d="m14 14-6 6 6 6m16-12 6 6-6 6m-7-15-5 30"/></g>
+<g id="icon-browser" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="1" y="2" width="44" height="34" rx="4"/><path d="M1 11H45M7 7H9M13 7H15M19 7H21M9 28L18 21L25 25L36 16"/></g>
+<g id="icon-files" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 2H29L38 11V38H8ZM29 2V12H38M14 19H31M14 25H31M14 31H26M3 8V43H31"/></g>
+<g id="icon-device" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"><rect x="1" y="1" width="46" height="31" rx="3"/><path d="M18 33V41M9 42H35"/><rect x="35" y="19" width="16" height="28" rx="3" fill="white"/><path d="M41 42H45"/></g>
+</defs>
+<!-- Service boundary -->
+<rect x="250" y="25" width="590" height="425" rx="20" fill="#f5f8ff" stroke="#aec3e8" stroke-width="1.5"/>
+<text x="274" y="57" fill="#244a83" font-size="17" font-weight="700">GitHub · 클라우드 자동 운영</text>
+<text x="274" y="79" fill="#667b96" font-size="12">개인 PC 전원과 무관하게 실행</text>
+<!-- Sources -->
+<text x="25" y="95" fill="#586974" font-size="13" font-weight="600">외부 데이터</text>
+<rect x="20" y="110" width="185" height="110" rx="12" fill="#fff" stroke="#d8e1e6"/>
+<text x="37" y="144" fill="#6400b9" font-size="23" font-weight="700">yahoo! finance</text>
+<text x="37" y="174" fill="#182832" font-size="14">나스닥100 · NDX</text>
+<text x="37" y="197" fill="#586974" font-size="12">yfinance로 종가 수집</text>
+<rect x="20" y="255" width="185" height="110" rx="12" fill="#fff" stroke="#d8e1e6"/>
+<text x="37" y="292" fill="#087664" font-size="26" font-weight="700">Cboe</text>
+<text x="37" y="320" fill="#182832" font-size="14">VIX 일별 종가</text>
+<text x="37" y="343" fill="#586974" font-size="12">공개 CSV</text>
+<!-- Scheduler -->
+<rect x="305" y="102" width="280" height="65" rx="12" fill="white" stroke="#bdcdea"/>
+<use href="#icon-clock" x="321" y="114" color="#386ac3"/>
+<text x="375" y="128" fill="#182832" font-size="14" font-weight="700">GitHub 예약 스케줄러</text>
+<text x="375" y="149" fill="#586974" font-size="12">매일 KST 08:17 · 지연 가능</text>
+<path d="M445 167V204" fill="none" stroke="#386ac3" stroke-width="2" marker-end="url(#arr-blue)"/>
+<!-- Python runner -->
+<rect x="305" y="205" width="280" height="125" rx="12" fill="white" stroke="#80a3df" stroke-width="1.5"/>
+<use href="#icon-code" x="323" y="224" color="#386ac3"/>
+<text x="382" y="239" fill="#182832" font-size="16" font-weight="700">GitHub Actions</text>
+<text x="382" y="263" fill="#386ac3" font-size="14" font-weight="600">Python · 전략 계산</text>
+<text x="323" y="291" fill="#586974" font-size="12">수집·검증 → 시장 판정 → 목표 비중</text>
+<text x="323" y="313" fill="#586974" font-size="12">250일선 / VIX10 / 52주 낙폭</text>
+<!-- incoming data -->
+<path d="M205 165H228V243H305M205 310H228V278H305" fill="none" stroke="#386ac3" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+<!-- repository -->
+<rect x="305" y="369" width="280" height="61" rx="10" fill="#eaf5f1" stroke="#b2d7ca"/>
+<use href="#icon-files" x="322" y="378" color="#087664"/>
+<text x="377" y="392" fill="#087664" font-size="14" font-weight="700">GitHub 저장소 · 영구 기록</text>
+<text x="377" y="414" fill="#586974" font-size="12">코드 / 설정 / 이전 상태 / 일별 결과</text>
+<path d="M345 369V331" fill="none" stroke="#386ac3" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+<text x="353" y="354" fill="#586974" font-size="11">읽기</text>
+<path d="M542 331V368" fill="none" stroke="#386ac3" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+<text x="491" y="354" fill="#586974" font-size="11">기록</text>
+<!-- Pages -->
+<rect x="650" y="205" width="165" height="125" rx="12" fill="white" stroke="#bdcdea"/>
+<use href="#icon-browser" x="709" y="219" color="#386ac3"/>
+<text x="732" y="282" text-anchor="middle" fill="#182832" font-size="16" font-weight="700">GitHub Pages</text>
+<text x="732" y="305" text-anchor="middle" fill="#586974" font-size="12">HTML 대시보드</text>
+<path d="M585 267H648" fill="none" stroke="#386ac3" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+<text x="617" y="251" text-anchor="middle" fill="#586974" font-size="11">배포</text>
+<!-- User -->
+<rect x="921" y="205" width="175" height="125" rx="12" fill="white" stroke="#d8e1e6"/>
+<use href="#icon-device" x="981" y="219" color="#182832"/>
+<text x="1008" y="290" text-anchor="middle" fill="#182832" font-size="16" font-weight="700">사용자</text>
+<text x="1008" y="312" text-anchor="middle" fill="#586974" font-size="12">PC / 휴대폰 브라우저</text>
+<path d="M921 246H817" fill="none" stroke="#386ac3" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+<text x="869" y="233" text-anchor="middle" fill="#586974" font-size="11">페이지 접속</text>
+<path d="M815 288H919" fill="none" stroke="#386ac3" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+<text x="869" y="309" text-anchor="middle" fill="#586974" font-size="11">결과 표시</text>
+<text x="1008" y="362" text-anchor="middle" fill="#182832" font-size="13">지금은 어떤 시장인가?</text>
+<text x="1008" y="386" text-anchor="middle" fill="#182832" font-size="13">무엇을 살 것인가?</text>
+<!-- Development lane -->
+<rect x="20" y="492" width="1076" height="106" rx="12" fill="#fafbfc" stroke="#d8e1e6" stroke-dasharray="5 5"/>
+<use href="#icon-device" x="44" y="519" color="#657582"/>
+<text x="114" y="523" fill="#182832" font-size="15" font-weight="700">로컬 작업 폴더 + Codex</text>
+<text x="114" y="547" fill="#586974" font-size="12">최초 구현 · 설정 · 이후 수정</text>
+<text x="114" y="572" fill="#586974" font-size="12">C:\Users\문종근\Desktop\문종근\stock\StockSignal</text>
+<path d="M445 491V431" fill="none" stroke="#83929e" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#arr-gray)"/>
+<text x="459" y="477" fill="#586974" font-size="11">코드 업로드 / 수정</text>
+<text x="641" y="533" fill="#182832" font-size="14" font-weight="600">매일 갱신 버튼을 누를 필요 없음</text>
+<text x="641" y="558" fill="#586974" font-size="12">예약 실행의 주체는 GitHub Actions.</text>
+<text x="641" y="580" fill="#586974" font-size="12">현재는 설계 단계이며, 실제 실행·배포는 아직 미구현.</text>
+</svg>
+<figcaption style="font-size:12px;color:#586974;margin:8px 6px 0">GitHub 내부에서 계산과 게시를 처리하는 구조. 아래 점선 영역은 처음 만들거나 수정할 때 사용하는 개발 환경입니다.</figcaption>
+</figure>
+<h2 class="section-title">01 — 전체 흐름 <span>왼쪽에서 수집하고, 가운데서 계산하고, 오른쪽에서 확인</span></h2>
+<div class="flow" aria-label="데이터 원천에서 GitHub Actions의 수집, 검증, 계산을 거쳐 GitHub Pages 대시보드로 전달되는 흐름">
+<section class="box">
+<div class="label">INPUT / 무료 데이터</div><h3>일별 종가 데이터</h3>
+<div class="source"><b>Yahoo Finance → yfinance</b><small>기준 지수의 과거 일별 종가<br>나스닥100 NDX · 영상 20:42 근거</small></div>
+<div class="source"><b>Cboe → VIX 공개 CSV</b><small>VIX 일별 종가<br>최근 10거래일 평균 계산</small></div>
+<p style="margin:10px 0 0">최초 실행 때 과거 이력을 확보하고, 이후 누락된 거래일까지 보충한다.</p>
+</section>
+<div class="arrow" aria-hidden="true">→</div>
+<section class="cloud">
+<div class="cloud-title">GitHub Actions <small>매일 KST 08:17 예약 · 실행 지연 가능</small></div>
+<div class="step"><strong>① 데이터 수집 · 날짜 검증</strong><small>확정 종가만 사용 / 중복 제거 / 거래일 일치 확인<br>미국 휴장일은 새 신호를 만들지 않음</small></div>
+<div class="down" aria-hidden="true">↓</div>
+<div class="step"><strong>② Python 전략 계산</strong><small>250일선 · VIX10 · 52주 고점 대비 낙폭<br>이전 거래일 상태를 반영해 시장과 목표 비중 판정</small></div>
+<div class="down" aria-hidden="true">↓</div>
+<div class="step"><strong>③ 결과 기록 → 웹 게시</strong><small>일별 결과를 저장소에 커밋<br>검증된 결과로 페이지 생성 → Pages 배포</small></div>
+<div class="storage"><b>↺ 영구 기록 · GitHub 저장소</b><code>history.csv / latest.json / config.json</code><br>다음 실행 ②에서 이전 상태를 읽음<br>실행 서버의 임시 디스크에만 저장하지 않음</div>
+</section>
+<div class="arrow" aria-hidden="true">→</div>
+<section class="box">
+<div class="label">OUTPUT / GitHub Pages</div><h3>단일 웹 대시보드</h3>
+<div class="screen"><small>화면 구성 예시 · 실제 신호 아님</small><hr><small>1. 지금은 어떤 시장인가</small><strong>상승 / 하락</strong><small>2. 무엇을 살 것인가</small><strong>종목 + 목표 비중</strong><hr><p>판정 근거 · 데이터 기준일 · 적용 거래일<br>직전 목표 대비 변경 여부<br>최근 변경 이력</p></div>
+<p style="margin-bottom:0">휴대폰·PC에서 주소로 접속.<br>접속 시에는 저장된 결과만 표시.</p>
+</section>
+</div>
+<div class="rail">
+<section class="box return"><h3>↺ 첫 실행과 누락 복구</h3><p>과거의 명확한 상승·하락 판정부터 순서대로 재계산한다. 중간 구간에서 시작했다고 임의로 상승을 선택하지 않는다. 누락된 날은 거래일 순서대로 보충한다.</p></section>
+<section class="box error"><h3>수집 실패 → 재시도 → 이전 정상 결과 보존</h3><p>같은 실행 안에서 제한적으로 재시도한다. 계속 실패하면 새 신호를 게시하지 않는다. 화면은 기준일과 미국 거래일 달력으로 데이터 지연을 표시한다. 최신 날짜가 서로 다른 두 시계열을 섞지 않는다.</p></section>
+</div>
+<h2 class="section-title">02 — 전략 엔진 <span>첨부 이미지의 규칙을 계산 로직으로 표현</span></h2>
+<div class="rules">
+<section class="box"><div class="label">STEP A / 시장 상태</div><h3>종가와 250일 이동평균 비교</h3>
+<div class="rule-row"><span>종가 &gt; 250일선 × 1.01</span><b class="green">상승</b></div>
+<div class="rule-row"><span>종가 &lt; 250일선 × 0.95</span><b class="red">하락</b></div>
+<div class="rule-row"><span>그 사이 · 경계값 포함</span><b>이전 상태 유지</b></div>
+<p style="margin:15px 0 0">250일은 거래일 기준. VIX10은 VIX 종가의 최근 10거래일 평균. 단순평균을 구현 기본값으로 제안.</p>
+</section>
+<section class="box"><div class="label">STEP B / 목표 비중</div><h3>시장 상태 + 변동성 + 낙폭</h3>
+<table><thead><tr><th scope="col">시장</th><th scope="col">조건</th><th scope="col">목표</th></tr></thead><tbody>
+<tr><td>상승</td><td>VIX10 &lt; 28 그리고 낙폭 ≤ 9%</td><td><b>TQQQ 100%</b></td></tr>
+<tr><td>상승</td><td>VIX10 ≥ 28 또는 낙폭 &gt; 9%</td><td><b>QQQ 50% + QLD 50%</b></td></tr>
+<tr><td>하락</td><td>VIX10 &lt; 18</td><td><b>QQQ 50% + QLD 50%</b></td></tr>
+<tr><td>하락</td><td>VIX10 ≥ 18</td><td><b>현금 100%</b></td></tr>
+</tbody></table><p style="margin:12px 0 0">STEP C · 직전 거래일과 목표 비중이 같으면 “변경 없음”. 실제 보유량이나 주문 체결 여부는 추적하지 않는다.</p>
+</section>
+</div>
+<h2 class="section-title">03 — 자료에서 확인한 정의와 남은 세부사항 <span>영상 스크립트 반영 · 불명확한 계산 관례는 별도 기록</span></h2>
+<div class="notes">
+<section class="box"><div class="num">01 / 기준 지수</div><h3>나스닥100 지수 · NDX</h3><p>영상 20:42에서 나스닥100 지수를 명시한다. 판단 지수는 NDX로 설정하고, 매매 대상은 QQQ·QLD·TQQQ로 구분한다. 데이터 장애 시 QQQ로 자동 대체하지 않는다.</p></section>
+<section class="box"><div class="num">02 / 고점의 기간</div><h3>최근 52주 고점 대비 현재 낙폭</h3><p>영상 21:01~21:12에서 최근 52주로 명시한다. 현재 낙폭 = (1 − 종가 ÷ 52주 고점) × 100. 52주를 달력 기준으로 볼지 252거래일로 볼지, 최고 종가와 장중 고가 중 무엇을 쓸지는 확인 필요.</p></section>
+<section class="box"><div class="num">03 / 가격과 재현성</div><h3>종가 확인 후 다음 거래일 적용</h3><p>영상 14:40~15:17에 따라 신호일과 적용 거래일을 분리한다. 다음 거래일의 시가·종가 중 실제 집행 가격은 미확정이다. 50:50 비중의 일별 재조정 여부도 백테스트 전에 정의해야 한다.</p></section>
+</div>
+<p class="scope">첫 버전 범위: 데이터 수집 · 상태 계산 · 일별 기록 · 화면 게시. 자동매매, 증권계좌 연동, 메신저 봇, 별도 DB 서버는 범위에 포함하지 않는다.</p>
+<details><summary>운영 조건과 확인 자료</summary><ul>
+<li>최초 GitHub 계정 연결과 Actions·Pages 설정이 필요하다. 실행 시에는 GitHub가 제공하는 자동 토큰을 사용하며, 사용자 발급 데이터 API 키는 사용하지 않는다.</li>
+<li>무료 구성은 공개 저장소와 표준 GitHub 실행 환경을 전제로 한다. 공개되는 파일에는 개인 보유내역·계좌 정보를 넣지 않는다.</li>
+<li>공개 저장소의 예약 작업은 60일간 저장소 활동이 없으면 비활성화될 수 있다. 일별 결과 커밋을 정상 운영 흐름에 포함한다. 장기 장애는 별도 확인이 필요하다.</li>
+<li>yfinance는 Yahoo의 공식 지원 도구가 아니므로 데이터 제공 방식 변경에 따른 보수가 발생할 수 있다. 데이터 재배포 조건은 실제 공개 범위를 정할 때 확인한다.</li>
+<li><a href="https://github.com/ranaroussi/yfinance">yfinance 안내</a> · <a href="https://www.cboe.com/tradable_products/vix/vix_historical_data">Cboe VIX 자료</a> · <a href="https://docs.github.com/en/pages/getting-started-with-github-pages">GitHub Pages</a> · <a href="https://docs.github.com/en/actions/how-tos/troubleshoot-workflows">Actions 실행 제한</a></li>
+</ul></details>
+<footer class="footer"><span>STOCK SIGNAL · 제안 아키텍처 v0.2</span><span>독립형 HTML · 외부 라이브러리 없음 · 오프라인 열람 가능</span></footer>
+</main></body></html>
+
+

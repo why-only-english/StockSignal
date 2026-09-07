@@ -1,0 +1,53 @@
+name: Daily Stock Signal
+on:
+  schedule:
+    - cron: '17 23 * * *' # UTC 23:17 = KST next day 08:17
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: stock-signal
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q
+      - name: Collect and build (preserve previous signal on failure)
+        id: collect
+        continue-on-error: true
+        run: python -m stock_signal.app
+      - name: Save verified daily state
+        if: steps.collect.outcome == 'success'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update daily stock signal"
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment
+      - name: Report collection failure after publishing status
+        if: steps.collect.outcome != 'success'
+        run: exit 1
