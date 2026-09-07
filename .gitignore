@@ -15,6 +15,7 @@
 /data/*
 !/data/state.json
 !/data/notification.json
+!/data/comparison.json
 __pycache__/
 *.pyc
 .pytest_cache/

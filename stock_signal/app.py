@@ -116,7 +116,9 @@ def build(status):
     if state:
         state = dict(state)
         state['history'] = [r for r in state['history'] if r['changed'] or r['initial']]
-    payload = json.dumps({'state': state, 'status': status}, ensure_ascii=False, allow_nan=False).replace('<', '\\u003c')
+    comparison_path = ROOT / 'data/comparison.json'
+    comparison = read_json(comparison_path) if comparison_path.exists() else None
+    payload = json.dumps({'state': state, 'status': status, 'comparison': comparison}, ensure_ascii=False, allow_nan=False).replace('<', '\\u003c')
     template = (ROOT / 'web/template.html').read_text(encoding='utf-8')
     output = ROOT / 'site'
     output.mkdir(exist_ok=True)
@@ -142,6 +144,14 @@ def main():
             status.update(ok=False, error=f'{type(error).__name__}: {error}')
             print(f'Update failed; retaining last verified state. {status["error"]}', file=sys.stderr)
             exit_code = 1
+        if status['ok']:
+            try:
+                from .comparison import refresh as refresh_comparison
+                refresh_comparison(read_json(ROOT / 'data/state.json'))
+                status['comparison_ok'] = True
+            except Exception as error:
+                status['comparison_ok'] = False
+                print(f'Comparison refresh failed; retaining previous comparison: {type(error).__name__}', file=sys.stderr)
         atomic_json(ROOT / 'work/status.json', status)
     build(status)
     return exit_code
