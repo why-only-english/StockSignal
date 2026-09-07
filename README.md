@@ -37,13 +37,18 @@ Python 3.11 이상을 설치한 Windows에서 이 폴더의 `update.ps1`을 Powe
 
 ## 참고 이미지
 
-### 1단계 · 지금은 어떤 시장인가
+### 1단계 - 지금은 어떤 시장인가
 
-사진 추가 예정
+<img width="661" height="339" alt="image" src="https://github.com/user-attachments/assets/1535d377-85c7-41c1-a5a9-33918bb1d739" />
 
-### 2단계 · 무엇을 살 것인가
 
-사진 추가 예정
+### 2단계 - 무엇을 살 것인가
+
+<img width="661" height="377" alt="image" src="https://github.com/user-attachments/assets/f293a95d-7a98-4f64-bdf0-25b518ae8b55" />
+
+### 3단계 - 어제와 같으면 아무 것도 하지 않는다
+
+---
 
 ## 데이터·복구
 
