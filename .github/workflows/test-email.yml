@@ -1,0 +1,25 @@
+name: Test Signal Email
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: test-signal-email
+  cancel-in-progress: false
+jobs:
+  send-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Send clearly labeled historical example without changing checkpoint
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_HOST: ${{ vars.MAIL_HOST }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+        run: python -m stock_signal.notify --test

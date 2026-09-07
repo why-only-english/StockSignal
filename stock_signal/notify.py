@@ -47,10 +47,12 @@ def message(sender, events):
     return mail
 
 
-def run():
+def run(test=False):
     keys = ('MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_TO')
     values = [os.environ.get(key, '').strip() for key in keys]
     if not any(values):
+        if test:
+            raise ValueError('Mail secrets required for test')
         print('Email notifications disabled: secrets not configured')
         return
     if not all(values):
@@ -63,31 +65,42 @@ def run():
     state = read_json(ROOT / 'data/state.json')
     path = ROOT / 'data/notification.json'
     latest = state['latest']
-    if not path.exists():
+    if test:
+        history = state['history']
+        events = changes(history, history[0])[-1:]
+        if not events:
+            raise ValueError('No historical change available for test')
+    elif not path.exists():
         atomic_json(path, checkpoint(latest))
         print('Email baseline initialized; no historical email sent')
         return
-    previous = read_json(path)
-    if latest['date'] < previous['date']:
-        raise ValueError('Signal older than notification checkpoint')
-    events = changes(state['history'], previous)
+    else:
+        previous = read_json(path)
+        if latest['date'] < previous['date']:
+            raise ValueError('Signal older than notification checkpoint')
+        events = changes(state['history'], previous)
     if events:
         host = os.environ.get('MAIL_HOST') or 'smtp.gmail.com'
         port = int(os.environ.get('MAIL_PORT') or '465')
         with smtplib.SMTP_SSL(host, port, context=ssl.create_default_context(), timeout=30) as smtp:
             smtp.login(sender, password)
-            refused = smtp.send_message(message(sender, events), from_addr=sender, to_addrs=recipients)
+            mail = message(sender, events)
+            if test:
+                mail.replace_header('Subject', '[테스트] ' + str(mail['Subject']))
+                mail.set_content('테스트 메일입니다. 아래는 과거 신호 변경 예시이며, 오늘 발생한 변경이나 매매 지시가 아닙니다.\n\n' + mail.get_content())
+            refused = smtp.send_message(mail, from_addr=sender, to_addrs=recipients)
             if refused:
                 raise RuntimeError('Some recipients were refused')
         print('Signal notification accepted by SMTP server')
     else:
         print('No new market or allocation change; no email sent')
-    atomic_json(path, checkpoint(latest))
+    if not test:
+        atomic_json(path, checkpoint(latest))
 
 
 if __name__ == '__main__':
     try:
-        run()
+        run(test='--test' in sys.argv)
     except Exception:
         # SMTP errors may contain private recipient addresses. Never print them.
         print('Email notification failed; check mail settings and provider. Checkpoint unchanged.', file=sys.stderr)

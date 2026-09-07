@@ -65,3 +65,26 @@ def test_smtp_failure_preserves_checkpoint(tmp_path, monkeypatch):
     with pytest.raises(OSError):
         notify.run()
     assert notify.read_json(checkpoint)['date'] == first['date']
+
+
+def test_test_mail_preserves_checkpoint(tmp_path, monkeypatch):
+    monkeypatch.setattr(notify, 'ROOT', tmp_path)
+    (tmp_path / 'data').mkdir()
+    for key, value in {'MAIL_USERNAME':'sender@example.com', 'MAIL_PASSWORD':'fake',
+                       'MAIL_TO':'one@example.com,two@example.com'}.items():
+        monkeypatch.setenv(key, value)
+    first, last = row('2026-09-01'), row('2026-09-02', 'bear', 'CASH')
+    notify.atomic_json(tmp_path / 'data/state.json', {'latest':last,'history':[first,last]})
+    path = tmp_path / 'data/notification.json'
+    notify.atomic_json(path, notify.checkpoint(last))
+    original = path.read_bytes()
+    smtp = MagicMock()
+    send = smtp.return_value.__enter__.return_value.send_message
+    send.return_value = {}
+    monkeypatch.setattr(notify.smtplib, 'SMTP_SSL', smtp)
+    notify.run(test=True)
+    assert send.call_count == 1
+    mail = send.call_args.args[0]
+    assert str(mail['Subject']).startswith('[테스트]')
+    assert '오늘 발생한 변경이나 매매 지시가 아닙니다' in mail.get_content()
+    assert path.read_bytes() == original
