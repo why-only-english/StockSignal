@@ -3,6 +3,10 @@
 미국장 종가 기준으로 **지금의 시장 상태**와 **규칙상 목표 비중**을 보여주는 개인용 대시보드입니다.
 자동 주문·계좌 연동·실제 보유 비중 추적은 없습니다. 외부 데이터 API 키를 발급받지 않고 사용합니다.
 
+## 사이트
+
+https://stocksignal-psi.vercel.app
+
 ## 로컬 실행
 
 Python 3.11 이상을 설치한 Windows에서 이 폴더의 `update.ps1`을 PowerShell로 실행합니다.
@@ -71,6 +75,8 @@ Python 3.11 이상을 설치한 Windows에서 이 폴더의 `update.ps1`을 Powe
 3. 저장소 Settings → Pages → Source를 **GitHub Actions**로 지정합니다.
 4. Actions 탭의 **Daily Stock Signal**을 수동 실행하고 사이트 배포를 확인합니다.
 5. 이후 기본 브랜치의 `.github/workflows/daily.yml`이 미국 주식시장 실제 폐장 시각의 1시간 후에 수집합니다. 정규장 기준 뉴욕 17:00으로, 한국 시간은 서머타임 기간 다음날 06:00 / 그 외 다음날 07:00입니다. `America/New_York` 시간대로 서머타임을 자동 반영합니다. 조기 폐장일은 뉴욕 14:00 슬롯을 사용하고 휴장일은 수집하지 않습니다. 두 예약 슬롯 중 거래일 달력에 맞는 하나만 수집·게시하며, GitHub 예약 지연이나 준비 시간으로 실제 실행은 늦어질 수 있습니다.
+
+Vercel 배포를 위해 Repository secrets에 VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID를 등록합니다. 같은 실행에서 GitHub Pages와 Vercel에 결과를 게시합니다. Vercel 배포 전 계정·팀·프로젝트와 Hobby 플랜을 검증하며, 불일치하면 배포를 중단합니다. 토큰이 만료되면 Secret을 갱신해야 합니다.
 
 워크플로에는 미래 운영을 위한 `git commit`/`git push` 단계가 들어 있지만, 로컬 구현 중에는 실행하지 않았습니다.
 이 단계는 성공한 결과 파일 `data/state.json` 하나만 기록합니다. 공급자 장애 시 이전 결과와 오류 상태를 게시한 다음 Actions를 실패로 표시합니다.

@@ -73,6 +73,23 @@ jobs:
           path: site
       - uses: actions/deploy-pages@v4
         id: deployment
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Vercel deployment identity
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: python .github/verify_vercel.py
+      - name: Deploy dashboard to Vercel
+        working-directory: site
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TELEMETRY_DISABLED: '1'
+        run: npx --yes vercel@59.11.7 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN"
       - name: Report collection failure after publishing status
         if: steps.collect.outcome != 'success'
         run: exit 1
