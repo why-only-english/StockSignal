@@ -24,8 +24,8 @@ def test_both_changes_are_one_event_and_unchanged_days_silent():
     events = notify.changes([first, row('2026-09-02'), last], first)
     assert len(events) == 1
     mail = notify.message('sender@example.com', events)
-    assert '상승 → 하락' in mail.get_content()
-    assert 'TQQQ 100% → 현금 100%' in mail.get_content()
+    assert '상승 → 하락' in mail.get_body(preferencelist=('plain',)).get_content()
+    assert 'TQQQ 100% → 현금 100%' in mail.get_body(preferencelist=('plain',)).get_content()
     assert mail['To'] == 'undisclosed-recipients:;'
 
 
@@ -86,5 +86,30 @@ def test_test_mail_preserves_checkpoint(tmp_path, monkeypatch):
     assert send.call_count == 1
     mail = send.call_args.args[0]
     assert str(mail['Subject']).startswith('[테스트]')
-    assert '오늘 발생한 변경이나 매매 지시가 아닙니다' in mail.get_content()
+    assert '오늘 발생한 변경이나 매매 지시가 아닙니다' in mail.get_body(preferencelist=('plain',)).get_content()
     assert path.read_bytes() == original
+
+
+def test_html_alternative_and_test_notice():
+    events = [(row('2026-09-01'), row('2026-09-02', 'bear', 'CASH'))]
+    for test in (False, True):
+        mail = notify.message('sender@example.com', events, test=test)
+        assert mail.get_content_type() == 'multipart/alternative'
+        plain = mail.get_body(preferencelist=('plain',)).get_content()
+        html = mail.get_body(preferencelist=('html',)).get_content()
+        assert '현금 100%' in plain and '현금 100%' in html
+        assert '대시보드 확인하기' in html
+        assert '<script' not in html
+        assert ('오늘 발생한 변경이나 매매 지시가 아닙니다' in html) == test
+        assert ('오늘 발생한 변경이나 매매 지시가 아닙니다' in plain) == test
+        assert str(mail['Subject']).startswith('[테스트]') == test
+        assert mail['To'] == 'undisclosed-recipients:;'
+
+
+def test_html_multiple_events_and_escaped_date():
+    first, second, third = row('2026-09-01'), row('2026-09-02', 'bear', 'CASH'), row('2026-09-03')
+    second['date'] = '<b>example</b>'
+    html = notify.message('sender@example.com', [(first, second), (second, third)]).get_body(preferencelist=('html',)).get_content()
+    assert '&lt;b&gt;example&lt;/b&gt;' in html
+    assert '<b>example</b>' not in html
+    assert html.count('미국 종가 기준일') == 2
