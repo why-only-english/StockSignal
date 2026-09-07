@@ -1,7 +1,10 @@
 name: Daily Stock Signal
 on:
   schedule:
-    - cron: '17 23 * * *' # UTC 23:17 = KST next day 08:17
+    - cron: '0 14 * * 1-5' # 13:00 early close + 1 hour
+      timezone: America/New_York
+    - cron: '0 17 * * 1-5' # 16:00 regular close + 1 hour
+      timezone: America/New_York
   workflow_dispatch:
 
 permissions:
@@ -14,7 +17,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  market-hours:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check actual session close plus one hour
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: python -m stock_signal.schedule
   update:
+    needs: market-hours
+    if: needs.market-hours.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
