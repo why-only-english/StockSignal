@@ -115,7 +115,7 @@ def build(status):
     # Embed data: the same HTML works with file:// and GitHub Pages without a server.
     if state:
         state = dict(state)
-        state['history'] = [r for r in state['history'] if r['changed'] or r['initial']][-30:]
+        state['history'] = [r for r in state['history'] if r['changed'] or r['initial']]
     payload = json.dumps({'state': state, 'status': status}, ensure_ascii=False, allow_nan=False).replace('<', '\\u003c')
     template = (ROOT / 'web/template.html').read_text(encoding='utf-8')
     output = ROOT / 'site'
