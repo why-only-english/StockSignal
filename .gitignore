@@ -14,6 +14,7 @@
 !/strategy-reference-notes.md
 /data/*
 !/data/state.json
+!/data/notification.json
 __pycache__/
 *.pyc
 .pytest_cache/

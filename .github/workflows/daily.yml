@@ -67,6 +67,27 @@ jobs:
             git commit -m "Update daily stock signal"
             git push
           fi
+      - name: Notify private recipients of signal changes
+        id: notify
+        if: steps.collect.outcome == 'success'
+        continue-on-error: true
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_HOST: ${{ vars.MAIL_HOST }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+        run: python -m stock_signal.notify
+      - name: Save notification checkpoint
+        if: steps.notify.outcome == 'success'
+        run: |
+          if [ -f data/notification.json ]; then
+            git add data/notification.json
+            if ! git diff --cached --quiet; then
+              git commit -m "Update notification checkpoint"
+              git push
+            fi
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -91,5 +112,5 @@ jobs:
           VERCEL_TELEMETRY_DISABLED: '1'
         run: npx --yes vercel@59.11.7 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN"
       - name: Report collection failure after publishing status
-        if: steps.collect.outcome != 'success'
+        if: steps.collect.outcome != 'success' || steps.notify.outcome == 'failure'
         run: exit 1
