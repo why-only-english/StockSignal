@@ -85,3 +85,24 @@ def test_unchanged_mix_does_not_rebalance():
     portfolio.transition('MIX', prices, 1000., 2020)
     assert portfolio.qty('QQQ') == portfolio.qty('QLD') == 50.
     assert portfolio.gain[2020] == 0
+
+from stock_signal.errors import DataPending
+
+
+def test_latest_nan_is_pending_but_historical_nan_is_error():
+    state, frames, fx = inputs()
+    frames['QQQ'].iloc[-1, 0] = float('nan')
+    with pytest.raises(DataPending, match='QQQ 2010-02-16'):
+        simulate(state, frames, fx, {})
+    frames['QLD'].iloc[0, 0] = float('nan')
+    with pytest.raises(ValueError, match='Invalid ETF close') as caught:
+        simulate(state, frames, fx, {})
+    assert not isinstance(caught.value, DataPending)
+
+
+def test_invalid_zero_price_is_not_publication_delay():
+    state, frames, fx = inputs()
+    frames['QQQ'].iloc[-1, 0] = 0
+    with pytest.raises(ValueError, match='Invalid ETF close') as caught:
+        simulate(state, frames, fx, {})
+    assert not isinstance(caught.value, DataPending)

@@ -3,7 +3,13 @@ on:
   schedule:
     - cron: '0 14 * * 1-5' # 13:00 early close + 1 hour
       timezone: America/New_York
-    - cron: '0 17 * * 1-5' # 16:00 regular close + 1 hour
+    - cron: '0 17 * * 1-5' # regular close +1h or early close +4h
+      timezone: America/New_York
+    - cron: '0 20 * * 1-5' # regular close +4h
+      timezone: America/New_York
+    - cron: '0 21 * * 1-5' # early close +8h
+      timezone: America/New_York
+    - cron: '0 0 * * 2-6' # regular close +8h (next NY day, including Saturday)
       timezone: America/New_York
   workflow_dispatch:
 
@@ -24,14 +30,17 @@ jobs:
       contents: read
     outputs:
       run: ${{ steps.check.outputs.run }}
+      final: ${{ steps.check.outputs.final }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Check actual session close plus one hour
+      - name: Check close +1/+4/+8 hours and pending data
         id: check
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -47,6 +56,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -58,7 +69,7 @@ jobs:
         continue-on-error: true
         run: python -m stock_signal.app
       - name: Save verified daily state
-        if: steps.collect.outcome == 'success'
+        if: steps.collect.outputs.signal_ready == 'true'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -70,7 +81,7 @@ jobs:
           fi
       - name: Notify private recipients of signal changes
         id: notify
-        if: steps.collect.outcome == 'success'
+        if: steps.collect.outputs.signal_ready == 'true'
         continue-on-error: true
         env:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
@@ -112,8 +123,10 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TELEMETRY_DISABLED: '1'
         run: npx --yes vercel@59.11.7 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN"
-      - name: Report comparison failure after publishing previous results
-        run: python -c "import json; s=json.load(open('work/status.json')); raise SystemExit(1 if s.get('comparison_ok') is False else 0)"
+      - name: Report errors or exhausted data retries
+        env:
+          FINAL_ATTEMPT: ${{ needs.market-hours.outputs.final }}
+        run: python -m stock_signal.report
       - name: Report collection failure after publishing status
         if: steps.collect.outcome != 'success' || steps.notify.outcome == 'failure'
         run: exit 1

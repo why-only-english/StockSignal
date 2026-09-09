@@ -49,7 +49,7 @@
 <rect x="305" y="102" width="280" height="65" rx="12" fill="white" stroke="#bdcdea"/>
 <use href="#icon-clock" x="321" y="114" color="#386ac3"/>
 <text x="375" y="128" fill="#182832" font-size="14" font-weight="700">GitHub 예약 스케줄러</text>
-<text x="375" y="149" fill="#586974" font-size="12">미국장 마감 + 1시간 · DST 자동</text>
+<text x="375" y="149" fill="#586974" font-size="12">마감 +1h · 미완료 시 +4h/+8h</text>
 <path d="M445 167V204" fill="none" stroke="#386ac3" stroke-width="2" marker-end="url(#arr-blue)"/>
 <!-- Python runner -->
 <rect x="305" y="205" width="280" height="125" rx="12" fill="white" stroke="#80a3df" stroke-width="1.5"/>
@@ -111,7 +111,7 @@
 </section>
 <div class="arrow" aria-hidden="true">→</div>
 <section class="cloud">
-<div class="cloud-title">GitHub Actions <small>미국장 마감 + 1시간 · 서머타임 자동 반영</small></div>
+<div class="cloud-title">GitHub Actions <small>마감 +1h 최초 실행 · +4h/+8h 재조회 · 서머타임 자동</small></div>
 <div class="step"><strong>① 데이터 수집 · 날짜 검증</strong><small>확정 종가만 사용 / 중복 제거 / 거래일 일치 확인<br>미국 휴장일은 새 신호를 만들지 않음</small></div>
 <div class="down" aria-hidden="true">↓</div>
 <div class="step"><strong>② Python 전략 계산</strong><small>250일선 · VIX10 · 52주 고점 대비 낙폭<br>이전 거래일 상태를 반영해 시장과 목표 비중 판정</small></div>

@@ -12,6 +12,7 @@ import time
 import urllib.request
 
 from .engine import calculate
+from .errors import DataPending
 
 ROOT = Path(__file__).resolve().parents[1]
 CBOE = 'https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv'
@@ -63,7 +64,7 @@ def supplement_vix(primary, fallback, expected):
             merged[day] = value
             added.append(day)
     if expected not in merged:
-        raise ValueError('Latest VIX close unavailable from both sources')
+        raise DataPending('Latest VIX close unavailable from both sources')
     return merged, added
 
 
@@ -113,7 +114,7 @@ def align_prices(ndx, vix, session_dates, expected):
             break
         if day not in ndx or day not in vix:
             missing = '/'.join(name for name, data in [('NDX', ndx), ('VIX', vix)] if day not in data)
-            raise ValueError(f'Missing {missing} close for {day}')
+            raise (DataPending if day == expected else ValueError)(f'Missing {missing} close for {day}')
         rows.append({'date': day, 'close': ndx[day], 'vix': vix[day]})
     if not rows or rows[-1]['date'] != expected:
         raise ValueError(f'Latest completed trading session {expected} is unavailable')
@@ -177,8 +178,17 @@ def main():
         saved = ROOT / 'work/status.json'
         status = read_json(saved) if saved.exists() else {'checked_at': None, 'ok': None, 'error': None}
     else:
+        config = read_json(ROOT / 'config.json')
+        expected = trading_calendar(now, config['history_start'])[2]
+        state_path = ROOT / 'data/state.json'
+        state = read_json(state_path) if state_path.exists() else None
         try:
-            refresh(read_json(ROOT / 'config.json'), now)
+            if not state or state.get('latest', {}).get('date') != expected or state.get('config') != config:
+                refresh(config, now)
+            else:
+                print('Signal already current; skipping collection.')
+        except DataPending as error:
+            status.update(ok=False, signal_pending=True, error=str(error))
         except Exception as error:
             status.update(ok=False, error=f'{type(error).__name__}: {error}')
             print(f'Update failed; retaining last verified state. {status["error"]}', file=sys.stderr)
@@ -186,11 +196,25 @@ def main():
         if status['ok']:
             try:
                 from .comparison import refresh as refresh_comparison
-                refresh_comparison(read_json(ROOT / 'data/state.json'))
+                path = ROOT / 'data/comparison.json'
+                comparison = read_json(path) if path.exists() else None
+                if not comparison or comparison.get('end') != expected or comparison.get('signal_config') != config:
+                    refresh_comparison(read_json(state_path))
+                else:
+                    print('Comparison already current; skipping collection.')
                 status['comparison_ok'] = True
+            except DataPending as error:
+                status.update(comparison_ok=None, comparison_pending=True, comparison_error=str(error))
             except Exception as error:
-                status['comparison_ok'] = False
-                print(f'Comparison refresh failed; retaining previous comparison: {type(error).__name__}', file=sys.stderr)
+                status.update(comparison_ok=False, comparison_error=f'{type(error).__name__}: {error}')
+                print(f'Comparison refresh failed: {status["comparison_error"]}', file=sys.stderr)
+        pending = status.get('signal_pending') or status.get('comparison_pending')
+        if pending:
+            print('::warning::Latest close pending; previous results retained. ' +
+                  (status.get('comparison_error') or status.get('error') or ''))
+        if os.environ.get('GITHUB_OUTPUT'):
+            with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+                output.write(f"signal_ready={str(status['ok']).lower()}\n")
         atomic_json(ROOT / 'work/status.json', status)
     build(status)
     return exit_code

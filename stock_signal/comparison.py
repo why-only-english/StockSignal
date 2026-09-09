@@ -72,16 +72,30 @@ def simulate(state, frames, fx_source, payment_days=None):
     dates = [r['date'] for r in history if r['date'] >= START]
     if not dates or dates[0] != START:
         raise ValueError('Actual ETF comparison requires full history from 2010-02-11')
+    pending = []
     for symbol in SYMBOLS:
         frame = frames[symbol]
-        if not frame.index.is_unique or not set(dates) <= set(frame.index):
-            raise ValueError('Missing or duplicate ETF trading sessions: ' + symbol)
-        for column in ('Close', 'Dividends'):
-            values = frame.loc[dates, column]
-            if not all(math.isfinite(v) and (v > 0 if column == 'Close' else v >= 0) for v in values):
-                raise ValueError('Invalid ETF prices or dividends')
-        if 'Capital Gains' in frame and (frame.loc[dates, 'Capital Gains'] != 0).any():
-            raise ValueError('Capital distributions need separate tax treatment')
+        if not frame.index.is_unique:
+            raise ValueError('Duplicate ETF sessions: ' + symbol)
+        for day in dates:
+            if day not in frame.index:
+                if day == dates[-1]:
+                    pending.append(symbol + ' ' + day)
+                    continue
+                raise ValueError('Missing historical ETF session: ' + symbol + ' ' + day)
+            close = frame.loc[day, 'Close']
+            if pd.isna(close) and day == dates[-1]:
+                pending.append(symbol + ' ' + day)
+            elif not math.isfinite(close) or close <= 0:
+                raise ValueError('Invalid ETF close: ' + symbol + ' ' + day)
+            dividend = frame.loc[day, 'Dividends']
+            if not math.isfinite(dividend) or dividend < 0:
+                raise ValueError('Invalid ETF dividend: ' + symbol + ' ' + day)
+            if 'Capital Gains' in frame and frame.loc[day, 'Capital Gains'] != 0:
+                raise ValueError('Capital distributions need separate tax treatment')
+    if pending:
+        from .errors import DataPending
+        raise DataPending('Missing latest ETF close: ' + ', '.join(pending))
     if not fx_source.index.is_unique:
         raise ValueError('Duplicate FX dates')
     source = fx_source.dropna().sort_index()
