@@ -14,19 +14,19 @@
     "drawdown_limit": 0.09
   },
   "latest": {
-    "date": "2026-09-04",
-    "close": 29544.150390625,
-    "vix": 14.53,
-    "ma": 26606.8749453125,
+    "date": "2026-09-08",
+    "close": 29507.701171875,
+    "vix": 15.720000267028809,
+    "ma": 26629.546546875,
     "high": 30660.599609375,
-    "vix10": 15.075999999999999,
-    "drawdown": 0.03641315672145651,
-    "distance": 0.11039535651404941,
+    "vix10": 15.06300002670288,
+    "drawdown": 0.03760195339257102,
+    "distance": 0.10808124802026531,
     "market": "bull",
     "target": "TQQQ",
     "changed": false,
     "initial": false,
-    "effective_date": "2026-09-08"
+    "effective_date": "2026-09-09"
   },
   "history": [
     {
@@ -90440,16 +90440,25 @@
       "target": "TQQQ",
       "changed": false,
       "initial": false
+    },
+    {
+      "date": "2026-09-08",
+      "close": 29507.701171875,
+      "vix": 15.720000267028809,
+      "ma": 26629.546546875,
+      "high": 30660.599609375,
+      "vix10": 15.06300002670288,
+      "drawdown": 0.03760195339257102,
+      "distance": 0.10808124802026531,
+      "market": "bull",
+      "target": "TQQQ",
+      "changed": false,
+      "initial": false
     }
   ],
   "source_start": "2000-01-03",
-  "expected_date": "2026-09-04",
+  "expected_date": "2026-09-08",
   "calendar": [
-    {
-      "date": "2026-08-28",
-      "close": "2026-08-28T20:00:00+00:00",
-      "open": "2026-08-28T13:30:00+00:00"
-    },
     {
       "date": "2026-08-31",
       "close": "2026-08-31T20:00:00+00:00",
@@ -91854,10 +91863,24 @@
       "date": "2027-10-12",
       "close": "2027-10-12T20:00:00+00:00",
       "open": "2027-10-12T13:30:00+00:00"
+    },
+    {
+      "date": "2027-10-13",
+      "close": "2027-10-13T20:00:00+00:00",
+      "open": "2027-10-13T13:30:00+00:00"
+    },
+    {
+      "date": "2027-10-14",
+      "close": "2027-10-14T20:00:00+00:00",
+      "open": "2027-10-14T13:30:00+00:00"
     }
   ],
   "sources": {
     "ndx": "Yahoo Finance / yfinance / ^NDX Close (unadjusted)",
-    "vix": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+    "vix": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+    "vix_fallback": "Yahoo Finance / yfinance / ^VIX Close",
+    "vix_fallback_dates": [
+      "2026-09-08"
+    ]
   }
 }
