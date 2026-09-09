@@ -4,6 +4,7 @@ import csv
 from datetime import datetime, timedelta, timezone
 import io
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -44,11 +45,33 @@ def trading_calendar(now, start):
     return cal, sessions, expected, future
 
 
+def supplement_vix(primary, fallback, expected):
+    """Only fill a recent trailing publication delay, never internal history gaps."""
+    last = max(primary) if primary else None
+    if last is None or (datetime.fromisoformat(expected) - datetime.fromisoformat(last)).days > 7:
+        raise ValueError('Cboe VIX history missing or too stale for fallback')
+    overlap = sorted(set(primary) & set(fallback))[-5:]
+    if len(overlap) < 5 or any(not math.isfinite(fallback[d]) or abs(primary[d] - fallback[d]) > .020001 for d in overlap):
+        raise ValueError('VIX sources do not agree on recent closing values')
+    merged = dict(primary)
+    added = []
+    for day in sorted(fallback):
+        if last < day <= expected:
+            value = fallback[day]
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError('Invalid fallback VIX close')
+            merged[day] = value
+            added.append(day)
+    if expected not in merged:
+        raise ValueError('Latest VIX close unavailable from both sources')
+    return merged, added
+
+
 def fetch_prices(config, expected):
     import yfinance as yf
     end = (datetime.fromisoformat(expected) + timedelta(days=1)).date().isoformat()
     ndx = yf.Ticker(config['symbol']).history(start=config['history_start'], end=end,
-        interval='1d', auto_adjust=False, actions=False, raise_errors=True, timeout=30)
+        interval='1d', auto_adjust=False, actions=False, timeout=30)
     if ndx.empty:
         raise ValueError('NDX source returned no data')
     ndx_map = {}
@@ -66,7 +89,20 @@ def fetch_prices(config, expected):
         if day in vix_map:
             raise ValueError('Duplicate VIX session')
         vix_map[day] = float(row['CLOSE'])
-    return ndx_map, vix_map
+    fallback_dates = []
+    if expected not in vix_map:
+        start = (datetime.fromisoformat(expected) - timedelta(days=45)).date().isoformat()
+        fallback = yf.Ticker('^VIX').history(start=start, end=end,
+            interval='1d', auto_adjust=False, actions=False, timeout=30)
+        fallback_map = {}
+        for stamp, row in fallback.iterrows():
+            day = stamp.strftime('%Y-%m-%d')
+            if day in fallback_map:
+                raise ValueError('Duplicate fallback VIX session')
+            fallback_map[day] = float(row['Close'])
+        vix_map, fallback_dates = supplement_vix(vix_map, fallback_map, expected)
+        print('VIX publication delay supplemented from Yahoo ^VIX: ' + ', '.join(fallback_dates))
+    return ndx_map, vix_map, fallback_dates
 
 
 def align_prices(ndx, vix, session_dates, expected):
@@ -76,7 +112,8 @@ def align_prices(ndx, vix, session_dates, expected):
         if day > expected:
             break
         if day not in ndx or day not in vix:
-            raise ValueError(f'Missing matching NDX/VIX close for {day}')
+            missing = '/'.join(name for name, data in [('NDX', ndx), ('VIX', vix)] if day not in data)
+            raise ValueError(f'Missing {missing} close for {day}')
         rows.append({'date': day, 'close': ndx[day], 'vix': vix[day]})
     if not rows or rows[-1]['date'] != expected:
         raise ValueError(f'Latest completed trading session {expected} is unavailable')
@@ -88,7 +125,7 @@ def refresh(config, now):
     prices = None
     for attempt in range(3):
         try:
-            ndx, vix = fetch_prices(config, expected)
+            ndx, vix, fallback_dates = fetch_prices(config, expected)
             dates = [s.strftime('%Y-%m-%d') for s in sessions]
             prices = align_prices(ndx, vix, dates, expected)
             break
@@ -104,7 +141,9 @@ def refresh(config, now):
     state = {'schema': 1, 'config': config, 'latest': latest,
              'history': signals, 'source_start': prices[0]['date'],
              'expected_date': expected, 'calendar': calendar,
-             'sources': {'ndx': 'Yahoo Finance / yfinance / ^NDX Close (unadjusted)', 'vix': CBOE}}
+             'sources': {'ndx': 'Yahoo Finance / yfinance / ^NDX Close (unadjusted)', 'vix': CBOE,
+                         'vix_fallback': 'Yahoo Finance / yfinance / ^VIX Close',
+                         'vix_fallback_dates': fallback_dates}}
     atomic_json(ROOT / 'data/state.json', state)
     print(f"Verified {len(prices)} sessions; {latest['date']}: {latest['market']} / {latest['target']}")
 

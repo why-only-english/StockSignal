@@ -32,7 +32,7 @@
 <details class="history"><summary><span>전체 목표 변경 이력</span><span id="history-range" class="meta"></span><span class="history-toggle" aria-hidden="true"></span></summary><div class="meta">과거 종가로 재계산한 신호 이력입니다. 실제 주문·체결 기록이 아닙니다. 금액 단위: 만 원 · 세후 추정 · 비교 시작 전은 —.</div><div class="scroll"><table><thead><tr><th>미국 종가 기준일</th><th>시장</th><th>목표 비중</th><th>VIX10</th><th>낙폭</th><th>QQQ 세후</th><th>QLD 세후</th><th>TQQQ 세후</th><th>전략 세후</th></tr></thead><tbody id="history"></tbody></table></div></details>
 </div>
 <details style="margin-top:26px"><summary>계산 기준 자세히 보기</summary><p>시장 상태가 유지되어도 VIX10이나 낙폭이 달라지면 목표 비중은 바뀔 수 있습니다. 목표가 같은 날에는 매일 50:50으로 재조정하라는 뜻이 아닙니다.</p><p>52주는 252거래일, 고점은 최고 종가, 평균은 당일을 포함한 단순평균으로 계산합니다. 최초 상태는 과거의 확정 판정부터 복원합니다. 이 계산 관례는 구현 기본값입니다.</p><p>100%는 이 전략에 배정한 자금 기준입니다. 종가 확인 후 다음 거래일에 적용하며, 실제 주문 시점·가격과 보유량은 추적하지 않습니다.</p></details>
-<details><summary>데이터와 갱신 상태</summary><p>지수: Yahoo Finance의 나스닥100(^NDX) 종가 · VIX: Cboe 공개 일별 자료. 두 자료의 거래일이 일치하고 누락이 없는 경우에만 새 신호를 기록합니다.</p><p>미국장 마감 1시간 후에 수집하도록 GitHub Actions를 설정합니다. 정규장 기준 한국 시간은 서머타임 기간 06:00, 그 외 07:00이며 조기 폐장·휴장일도 거래일 달력으로 반영합니다. 로컬에서 여는 것만으로 수집이 실행되지는 않습니다. 실제 예약 작동 여부는 GitHub 설정 후 확인할 수 있습니다.</p><p>미국 거래일 달력은 exchange_calendars의 XNYS를 사용합니다. 일반 미국 주식시장 휴장·조기폐장을 반영하며, 데이터 지연 또는 달력 유효기간 초과 시 상단에 표시합니다.</p><p id="source-range"></p><p id="error-detail"></p></details>
+<details><summary>데이터와 갱신 상태</summary><p>지수: Yahoo Finance의 나스닥100(^NDX) 종가 · VIX: Cboe 공개 일별 자료. 최신 종가 게시가 지연되면 최근 공통 종가를 대조한 Yahoo Finance ^VIX 값으로 보완합니다. 두 자료의 거래일이 일치하고 누락이 없는 경우에만 새 신호를 기록합니다.</p><p>미국장 마감 1시간 후에 수집하도록 GitHub Actions를 설정합니다. 정규장 기준 한국 시간은 서머타임 기간 06:00, 그 외 07:00이며 조기 폐장·휴장일도 거래일 달력으로 반영합니다. 로컬에서 여는 것만으로 수집이 실행되지는 않습니다. 실제 예약 작동 여부는 GitHub 설정 후 확인할 수 있습니다.</p><p>미국 거래일 달력은 exchange_calendars의 XNYS를 사용합니다. 일반 미국 주식시장 휴장·조기폐장을 반영하며, 데이터 지연 또는 달력 유효기간 초과 시 상단에 표시합니다.</p><p id="source-range"></p><p id="error-detail"></p></details>
 <footer>전략의 목표 비중을 표시합니다. 과거 세후 비교는 명시된 가정에 따른 추정치이며, 주문을 실행하지 않습니다.</footer>
 </main><script id="signal-data" type="application/json">__SIGNAL_DATA__</script><script>
 const {state,status,comparison}=JSON.parse(document.getElementById('signal-data').textContent);
@@ -87,7 +87,7 @@ if(state){
  ruleRow('allocation-rules',`상승 · VIX10 ≥ ${c.bull_vix_limit} 또는 낙폭 > ${pct(c.drawdown_limit)}`,'QQQ 50% + QLD 50%','1.5배 구성',choice===1);
  ruleRow('allocation-rules',`하락 · VIX10 < ${c.bear_vix_limit}`,'QQQ 50% + QLD 50%','1.5배 구성',choice===2);
  ruleRow('allocation-rules',`하락 · VIX10 ≥ ${c.bear_vix_limit}`,'현금 100%','0배 구성',choice===3,'is-bear');
- text('source-range',`과거 계산 시작: ${state.source_start} · 규칙 버전: ${c.version}`);
+ text('source-range',`과거 계산 시작: ${state.source_start} · 규칙 버전: ${c.version}`+(state.sources?.vix_fallback_dates?.length?` · Yahoo VIX 보완 날짜: ${state.sources.vix_fallback_dates.join(', ')}`:''));
 }else {el('empty').hidden=false;}
 text('error-detail',status.error?'수집 오류: '+status.error:'');updateHealth();setInterval(updateHealth,60000);
 </script><script id="theme-controls">
