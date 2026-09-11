@@ -71,12 +71,12 @@ jobs:
       - name: Save verified daily state
         if: steps.collect.outputs.signal_ready == 'true'
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'why-only-english'
+          git config user.email '114092152+why-only-english@users.noreply.github.com'
           git add data/state.json
           if [ -f data/comparison.json ]; then git add data/comparison.json; fi
           if ! git diff --cached --quiet; then
-            git commit -m "Update daily stock signal"
+            git commit -m "Update daily stock signal" -m "Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
             git push
           fi
       - name: Notify private recipients of signal changes
@@ -96,7 +96,7 @@ jobs:
           if [ -f data/notification.json ]; then
             git add data/notification.json
             if ! git diff --cached --quiet; then
-              git commit -m "Update notification checkpoint"
+              git commit -m "Update notification checkpoint" -m "Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
               git push
             fi
           fi
