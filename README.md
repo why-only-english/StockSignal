@@ -123,7 +123,7 @@ Gmail 앱 비밀번호는 2단계 인증이 필요하며 계정 정책에 따라
 
 ### 전체 흐름
 
-<img width="1147" height="675" alt="image" src="https://github.com/user-attachments/assets/3a81b832-20b4-4c9e-a960-d31bc66d24ae" />
+<img width="2100" height="1211" alt="image" src="https://github.com/user-attachments/assets/2f915972-bd09-4d2b-94a1-f6532f504714" />
 
 
 ## 파일
