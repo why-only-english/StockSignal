@@ -14,19 +14,19 @@
     "drawdown_limit": 0.09
   },
   "latest": {
-    "date": "2026-10-13",
-    "close": 30569.48046875,
-    "vix": 15.270000457763672,
-    "ma": 27195.4536328125,
+    "date": "2026-10-14",
+    "close": 29950.81640625,
+    "vix": 16.8700008392334,
+    "ma": 27216.2754609375,
     "high": 31224.470703125,
-    "vix10": 15.438000045776368,
-    "drawdown": 0.0209768242543643,
-    "distance": 0.12406584135322496,
+    "vix10": 15.491000083923343,
+    "drawdown": 0.040790260593513615,
+    "distance": 0.10047447341710236,
     "market": "bull",
     "target": "TQQQ",
     "changed": false,
     "initial": false,
-    "effective_date": "2026-10-14"
+    "effective_date": "2026-10-15"
   },
   "history": [
     {
@@ -90794,12 +90794,26 @@
     {
       "date": "2026-10-13",
       "close": 30569.48046875,
-      "vix": 15.270000457763672,
+      "vix": 15.27,
       "ma": 27195.4536328125,
       "high": 31224.470703125,
-      "vix10": 15.438000045776368,
+      "vix10": 15.438000000000002,
       "drawdown": 0.0209768242543643,
       "distance": 0.12406584135322496,
+      "market": "bull",
+      "target": "TQQQ",
+      "changed": false,
+      "initial": false
+    },
+    {
+      "date": "2026-10-14",
+      "close": 29950.81640625,
+      "vix": 16.8700008392334,
+      "ma": 27216.2754609375,
+      "high": 31224.470703125,
+      "vix10": 15.491000083923343,
+      "drawdown": 0.040790260593513615,
+      "distance": 0.10047447341710236,
       "market": "bull",
       "target": "TQQQ",
       "changed": false,
@@ -90807,7 +90821,7 @@
     }
   ],
   "source_start": "2000-01-03",
-  "expected_date": "2026-10-13",
+  "expected_date": "2026-10-14",
   "calendar": [
     {
       "date": "2026-10-05",
@@ -92235,7 +92249,7 @@
     "vix": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback": "Yahoo Finance / yfinance / ^VIX Close",
     "vix_fallback_dates": [
-      "2026-10-13"
+      "2026-10-14"
     ]
   }
 }
