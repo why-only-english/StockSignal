@@ -14,19 +14,19 @@
     "drawdown_limit": 0.09
   },
   "latest": {
-    "date": "2026-10-28",
-    "close": 29813.15625,
-    "vix": 16.90999984741211,
-    "ma": 27382.6276484375,
+    "date": "2026-10-29",
+    "close": 29402.5078125,
+    "vix": 17.200000762939453,
+    "ma": 27397.298453125,
     "high": 31224.470703125,
-    "vix10": 18.017999984741213,
-    "drawdown": 0.04519898724764462,
-    "distance": 0.08876170076764667,
+    "vix10": 18.092000076293946,
+    "drawdown": 0.05835048119623225,
+    "distance": 0.07319003962400839,
     "market": "bull",
     "target": "TQQQ",
     "changed": false,
     "initial": false,
-    "effective_date": "2026-10-29"
+    "effective_date": "2026-10-30"
   },
   "history": [
     {
@@ -90947,13 +90947,27 @@
     },
     {
       "date": "2026-10-28",
-      "close": 29813.15625,
-      "vix": 16.90999984741211,
-      "ma": 27382.6276484375,
+      "close": 29813.16015625,
+      "vix": 16.91,
+      "ma": 27382.6276640625,
       "high": 31224.470703125,
-      "vix10": 18.017999984741213,
-      "drawdown": 0.04519898724764462,
-      "distance": 0.08876170076764667,
+      "vix10": 18.018,
+      "drawdown": 0.04519886214544394,
+      "distance": 0.08876184280069577,
+      "market": "bull",
+      "target": "TQQQ",
+      "changed": false,
+      "initial": false
+    },
+    {
+      "date": "2026-10-29",
+      "close": 29402.5078125,
+      "vix": 17.200000762939453,
+      "ma": 27397.298453125,
+      "high": 31224.470703125,
+      "vix10": 18.092000076293946,
+      "drawdown": 0.05835048119623225,
+      "distance": 0.07319003962400839,
       "market": "bull",
       "target": "TQQQ",
       "changed": false,
@@ -90961,13 +90975,8 @@
     }
   ],
   "source_start": "2000-01-03",
-  "expected_date": "2026-10-28",
+  "expected_date": "2026-10-29",
   "calendar": [
-    {
-      "date": "2026-10-19",
-      "close": "2026-10-19T20:00:00+00:00",
-      "open": "2026-10-19T13:30:00+00:00"
-    },
     {
       "date": "2026-10-20",
       "close": "2026-10-20T20:00:00+00:00",
@@ -92389,7 +92398,7 @@
     "vix": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback": "Yahoo Finance / yfinance / ^VIX Close",
     "vix_fallback_dates": [
-      "2026-10-28"
+      "2026-10-29"
     ]
   }
 }
