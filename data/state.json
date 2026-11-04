@@ -14,19 +14,19 @@
     "drawdown_limit": 0.09
   },
   "latest": {
-    "date": "2026-11-02",
-    "close": 27989.8203125,
-    "vix": 21.15,
-    "ma": 27415.472859375,
+    "date": "2026-11-03",
+    "close": 28180.263671875,
+    "vix": 20.829999923706055,
+    "ma": 27426.4511171875,
     "high": 31224.470703125,
-    "vix10": 18.305999999999997,
-    "drawdown": 0.10359344186741556,
-    "distance": 0.02094975549285838,
+    "vix10": 18.657999992370605,
+    "drawdown": 0.09749427172660866,
+    "distance": 0.02748487405339528,
     "market": "bull",
     "target": "MIX",
     "changed": false,
     "initial": false,
-    "effective_date": "2026-11-03"
+    "effective_date": "2026-11-04"
   },
   "history": [
     {
@@ -91000,10 +91000,24 @@
       "target": "MIX",
       "changed": false,
       "initial": false
+    },
+    {
+      "date": "2026-11-03",
+      "close": 28180.263671875,
+      "vix": 20.829999923706055,
+      "ma": 27426.4511171875,
+      "high": 31224.470703125,
+      "vix10": 18.657999992370605,
+      "drawdown": 0.09749427172660866,
+      "distance": 0.02748487405339528,
+      "market": "bull",
+      "target": "MIX",
+      "changed": false,
+      "initial": false
     }
   ],
   "source_start": "2000-01-03",
-  "expected_date": "2026-11-02",
+  "expected_date": "2026-11-03",
   "calendar": [
     {
       "date": "2026-10-26",
@@ -92414,12 +92428,19 @@
       "date": "2027-12-08",
       "close": "2027-12-08T21:00:00+00:00",
       "open": "2027-12-08T14:30:00+00:00"
+    },
+    {
+      "date": "2027-12-09",
+      "close": "2027-12-09T21:00:00+00:00",
+      "open": "2027-12-09T14:30:00+00:00"
     }
   ],
   "sources": {
     "ndx": "Yahoo Finance / yfinance / ^NDX Close (unadjusted)",
     "vix": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback": "Yahoo Finance / yfinance / ^VIX Close",
-    "vix_fallback_dates": []
+    "vix_fallback_dates": [
+      "2026-11-03"
+    ]
   }
 }
