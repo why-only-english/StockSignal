@@ -14,19 +14,19 @@
     "drawdown_limit": 0.09
   },
   "latest": {
-    "date": "2026-11-23",
-    "close": 26746.099609375,
-    "vix": 26.62,
-    "ma": 27555.7887421875,
+    "date": "2026-11-24",
+    "close": 26214.16796875,
+    "vix": 26.36,
+    "ma": 27560.5719765625,
     "high": 31224.470703125,
-    "vix10": 23.883,
-    "drawdown": 0.1434250442971255,
-    "distance": -0.02938363116323639,
+    "vix10": 24.573,
+    "drawdown": 0.1604607739234971,
+    "distance": -0.04885254228241276,
     "market": "bear",
     "target": "CASH",
     "changed": false,
     "initial": false,
-    "effective_date": "2026-11-24"
+    "effective_date": "2026-11-25"
   },
   "history": [
     {
@@ -91210,10 +91210,24 @@
       "target": "CASH",
       "changed": false,
       "initial": false
+    },
+    {
+      "date": "2026-11-24",
+      "close": 26214.16796875,
+      "vix": 26.36,
+      "ma": 27560.5719765625,
+      "high": 31224.470703125,
+      "vix10": 24.573,
+      "drawdown": 0.1604607739234971,
+      "distance": -0.04885254228241276,
+      "market": "bear",
+      "target": "CASH",
+      "changed": false,
+      "initial": false
     }
   ],
   "source_start": "2000-01-03",
-  "expected_date": "2026-11-23",
+  "expected_date": "2026-11-24",
   "calendar": [
     {
       "date": "2026-11-16",
@@ -92619,6 +92633,11 @@
       "date": "2027-12-29",
       "close": "2027-12-29T21:00:00+00:00",
       "open": "2027-12-29T14:30:00+00:00"
+    },
+    {
+      "date": "2027-12-30",
+      "close": "2027-12-30T21:00:00+00:00",
+      "open": "2027-12-30T14:30:00+00:00"
     }
   ],
   "sources": {
