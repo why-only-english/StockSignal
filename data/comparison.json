@@ -2,7 +2,7 @@
   "schema": 1,
   "initial_krw": 10000000,
   "start": "2010-02-11",
-  "end": "2026-11-24",
+  "end": "2026-11-25",
   "signal_config": {
     "version": "tripod-1.0",
     "symbol": "^NDX",
@@ -29583,6 +29583,13 @@
       "QLD": 765644640.27,
       "TQQQ": 2048563324.17,
       "strategy": 452981070.48
+    },
+    {
+      "date": "2026-11-25",
+      "QQQ": 153139924.17,
+      "QLD": 756417013.6,
+      "TQQQ": 2011018336.05,
+      "strategy": 453565728.7
     }
   ],
   "dividend_threshold_years": {
